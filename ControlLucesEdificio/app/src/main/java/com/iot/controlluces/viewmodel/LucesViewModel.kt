@@ -68,10 +68,6 @@ class LucesViewModel(application: Application) : AndroidViewModel(application) {
     private val nombreUsuarioActivo: String
         get() = _uiState.value.usuarioActual?.username ?: "Sistema"
 
-    /**
-     * Verifica si la acción manual/configuración está permitida según el rol del usuario
-     * y el estado de bloqueo de seguridad del edificio.
-     */
     private fun verificarPermisoOperacion(requiereAdmin: Boolean = false): Boolean {
         val state = _uiState.value
         val user = state.usuarioActual ?: return false
@@ -105,8 +101,6 @@ class LucesViewModel(application: Application) : AndroidViewModel(application) {
     fun descartarAvisoSeguridad() {
         _uiState.value = _uiState.value.copy(avisoSeguridad = null)
     }
-
-    // ==================== AUTENTICACIÓN Y SESIÓN ====================
 
     fun iniciarSesion(username: String, passwordPlano: String) {
         viewModelScope.launch {
@@ -142,8 +136,6 @@ class LucesViewModel(application: Application) : AndroidViewModel(application) {
     fun validarPinSeguridad(pinIngresado: String): Boolean {
         return dbHelper.verificarPinSeguridad(pinIngresado, _uiState.value.usuarioActual)
     }
-
-    // ==================== MOTOR AUTOMÁTICO IoT ====================
 
     private fun iniciarMotorAutomaticoIoT() {
         viewModelScope.launch {
@@ -219,8 +211,6 @@ class LucesViewModel(application: Application) : AndroidViewModel(application) {
         recargarDatos(pisoIdPreferido = piso.id, evaluarAuto = false)
     }
 
-    // ==================== CONTROL INDIVIDUAL POR SECTOR ====================
-
     fun alternarLuzManual(sector: SectorLuz, encender: Boolean) {
         if (!verificarPermisoOperacion()) return
         val nombrePiso = obtenerNombrePiso(sector.pisoId)
@@ -283,8 +273,6 @@ class LucesViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // ==================== CONTROL POR PISO Y EDIFICIO ====================
-
     fun controlarTodoElPisoActual(encender: Boolean) {
         if (!verificarPermisoOperacion()) return
         val piso = _uiState.value.pisoSeleccionado ?: return
@@ -326,8 +314,6 @@ class LucesViewModel(application: Application) : AndroidViewModel(application) {
             recargarDatos(evaluarAuto = (modo == ModoControl.AUTOMATICO))
         }
     }
-
-    // ==================== ACCIONES DE LA SECCIÓN DE SEGURIDAD ====================
 
     fun alternarModoCentinela(activo: Boolean) {
         if (_uiState.value.esSoloLectura) {
@@ -416,8 +402,6 @@ class LucesViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // ==================== SIMULADOR AMBIENTAL Y RELOJ ====================
-
     fun configurarRelojSimulado(usarSimulado: Boolean, nuevaHoraSimulada: String) {
         _uiState.value = _uiState.value.copy(
             usarHoraSimulada = usarSimulado,
@@ -437,8 +421,6 @@ class LucesViewModel(application: Application) : AndroidViewModel(application) {
             recargarDatos(evaluarAuto = true)
         }
     }
-
-    // ==================== ALTA Y BAJA DE PISOS Y SECTORES ====================
 
     fun crearNuevoPiso(numero: Int, nombre: String, descripcion: String) {
         if (!verificarPermisoOperacion(requiereAdmin = true)) return

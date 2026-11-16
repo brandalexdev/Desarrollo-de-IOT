@@ -19,10 +19,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/**
- * Gestor de Base de Datos SQLite nativo (SQLiteOpenHelper) para el sistema IoT
- * de control de iluminación y seguridad del edificio por piso y sector.
- */
 class DatabaseHelper(context: Context) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
@@ -30,14 +26,12 @@ class DatabaseHelper(context: Context) :
         const val DATABASE_NAME = "control_luces_edificio_iot.db"
         const val DATABASE_VERSION = 2
 
-        // 1. Tabla Pisos
         const val TABLE_PISOS = "pisos"
         const val COL_PISO_ID = "id"
         const val COL_PISO_NUMERO = "numero"
         const val COL_PISO_NOMBRE = "nombre"
         const val COL_PISO_DESCRIPCION = "descripcion"
 
-        // 2. Tabla Sectores
         const val TABLE_SECTORES = "sectores"
         const val COL_SECTOR_ID = "id"
         const val COL_SECTOR_PISO_ID = "piso_id"
@@ -57,7 +51,6 @@ class DatabaseHelper(context: Context) :
         const val COL_SECTOR_WATTS = "consumo_watts"
         const val COL_SECTOR_ALARMA_PIR = "alarma_intrusion_pir"
 
-        // 3. Tabla Historial de Eventos
         const val TABLE_HISTORIAL = "historial_eventos"
         const val COL_HIST_ID = "id"
         const val COL_HIST_PISO = "piso_nombre"
@@ -67,7 +60,6 @@ class DatabaseHelper(context: Context) :
         const val COL_HIST_USUARIO = "usuario"
         const val COL_HIST_FECHA = "fecha_hora"
 
-        // 4. Tabla Usuarios de Seguridad (Login y Roles con SHA-256)
         const val TABLE_USUARIOS = "usuarios"
         const val COL_USER_ID = "id"
         const val COL_USER_USERNAME = "username"
@@ -78,7 +70,6 @@ class DatabaseHelper(context: Context) :
         const val COL_USER_ACTIVO = "activo"
         const val COL_USER_ULTIMO_ACCESO = "ultimo_acceso"
 
-        // 5. Tabla Configuración Global de Seguridad del Edificio
         const val TABLE_CONFIG_SEGURIDAD = "configuracion_seguridad"
         const val COL_CFG_ID = "id"
         const val COL_CFG_CENTINELA = "modo_centinela"
@@ -87,7 +78,6 @@ class DatabaseHelper(context: Context) :
         const val COL_CFG_BLOQUEO = "bloqueo_controles"
         const val COL_CFG_PIN_MAESTRO = "pin_maestro"
 
-        // 6. Tabla Alertas de Seguridad e Intrusión
         const val TABLE_ALERTAS = "alertas_seguridad"
         const val COL_ALERTA_ID = "id"
         const val COL_ALERTA_TIPO = "tipo_alerta"
@@ -97,9 +87,6 @@ class DatabaseHelper(context: Context) :
         const val COL_ALERTA_FECHA = "fecha_hora"
         const val COL_ALERTA_ATENDIDA = "atendida"
 
-        /**
-         * Genera hash criptográfico SHA-256 para proteger contraseñas y PINs en SQLite.
-         */
         fun hashSHA256(input: String): String {
             val bytes = MessageDigest.getInstance("SHA-256").digest(input.toByteArray(Charsets.UTF_8))
             return bytes.joinToString("") { "%02x".format(it) }
@@ -212,11 +199,7 @@ class DatabaseHelper(context: Context) :
         onCreate(db)
     }
 
-    /**
-     * Carga inicial de pisos, sectores, usuarios con roles (SHA-256) y configuración de seguridad.
-     */
     private fun insertarDatosIniciales(db: SQLiteDatabase) {
-        // Configuración inicial de seguridad
         val cfgValues = ContentValues().apply {
             put(COL_CFG_ID, 1)
             put(COL_CFG_CENTINELA, 0)
@@ -227,36 +210,30 @@ class DatabaseHelper(context: Context) :
         }
         db.insert(TABLE_CONFIG_SEGURIDAD, null, cfgValues)
 
-        // Usuarios predeterminados con contraseñas cifradas en SHA-256
         insertarUsuarioInterno(db, "admin", "admin123", "Administrador General IoT", RolUsuario.ADMIN, "1234")
         insertarUsuarioInterno(db, "guardia", "guardia123", "Supervisor de Seguridad", RolUsuario.OPERADOR, "2580")
         insertarUsuarioInterno(db, "auditor", "123456", "Auditor Energético", RolUsuario.AUDITOR, "0000")
 
-        // Pisos del edificio
         val piso1Id = insertarPisoInterno(db, 1, "Piso 1 - Recepción y Acceso", "Lobby principal, pasillos de acceso y estacionamiento")
         val piso2Id = insertarPisoInterno(db, 2, "Piso 2 - Oficinas Corporativas", "Áreas de trabajo abierto, salas de reuniones y comedor")
         val piso3Id = insertarPisoInterno(db, 3, "Piso 3 - Laboratorios IoT & TI", "Servidores, laboratorio de electrónica y desarrollo")
         val piso4Id = insertarPisoInterno(db, 4, "Piso 4 - Dirección y Terraza", "Oficinas ejecutivas, auditorio y terraza exterior")
 
-        // Sectores Piso 1
         insertarSectorInterno(db, piso1Id, "Lobby Principal", "Acceso", true, 100, ModoControl.AUTOMATICO, "18:00", "07:00", true, true, true, 180, true, 120, 80)
         insertarSectorInterno(db, piso1Id, "Pasillo Norte", "Pasillo", false, 80, ModoControl.AUTOMATICO, "18:30", "06:30", true, true, false, 150, false, 250, 45)
         insertarSectorInterno(db, piso1Id, "Sala de Espera", "Común", true, 90, ModoControl.MANUAL, "19:00", "06:00", false, true, true, 150, false, 200, 60)
         insertarSectorInterno(db, piso1Id, "Estacionamiento Subsuelo", "Exterior/Acceso", true, 100, ModoControl.AUTOMATICO, "00:00", "23:59", true, true, true, 200, true, 50, 120)
 
-        // Sectores Piso 2
         insertarSectorInterno(db, piso2Id, "Oficina Abierta A", "Oficina", true, 100, ModoControl.MANUAL, "08:00", "19:00", true, true, true, 200, true, 140, 95)
         insertarSectorInterno(db, piso2Id, "Sala de Juntas Principal", "Reuniones", false, 75, ModoControl.AUTOMATICO, "08:30", "18:30", false, true, false, 150, false, 310, 65)
         insertarSectorInterno(db, piso2Id, "Pasillo Central P2", "Pasillo", false, 70, ModoControl.AUTOMATICO, "18:00", "06:30", true, true, true, 140, false, 280, 40)
         insertarSectorInterno(db, piso2Id, "Cafetería y Comedor", "Común", false, 85, ModoControl.MANUAL, "07:30", "16:00", true, false, false, 160, false, 350, 70)
 
-        // Sectores Piso 3
         insertarSectorInterno(db, piso3Id, "Laboratorio de Hardware IoT", "Laboratorio", true, 100, ModoControl.MANUAL, "08:00", "21:00", true, true, true, 220, true, 180, 110)
         insertarSectorInterno(db, piso3Id, "Sala de Servidores (CPD)", "Técnico", true, 60, ModoControl.AUTOMATICO, "18:00", "06:00", false, true, false, 100, true, 80, 50)
         insertarSectorInterno(db, piso3Id, "Área de Desarrollo", "Oficina", false, 90, ModoControl.AUTOMATICO, "08:00", "20:00", false, true, true, 180, false, 290, 85)
         insertarSectorInterno(db, piso3Id, "Pasillo Sur P3", "Pasillo", false, 75, ModoControl.AUTOMATICO, "18:00", "06:30", true, true, false, 140, false, 260, 40)
 
-        // Sectores Piso 4
         insertarSectorInterno(db, piso4Id, "Oficinas Dirección", "Oficina", false, 100, ModoControl.MANUAL, "09:00", "18:00", false, true, true, 170, false, 320, 75)
         insertarSectorInterno(db, piso4Id, "Auditorio de Conferencias", "Reuniones", false, 80, ModoControl.MANUAL, "09:00", "19:00", false, false, false, 150, false, 240, 130)
         insertarSectorInterno(db, piso4Id, "Terraza y Jardín Exterior", "Exterior/Acceso", false, 100, ModoControl.AUTOMATICO, "18:30", "06:00", true, false, true, 120, false, 400, 90)
@@ -393,8 +370,6 @@ class DatabaseHelper(context: Context) :
         db.insert(TABLE_ALERTAS, null, values)
     }
 
-    // ==================== MÓDULO DE SEGURIDAD: LOGIN, USUARIOS Y PIN ====================
-
     fun autenticarUsuario(usernameInput: String, passwordPlano: String): UsuarioSeguridad? {
         val db = writableDatabase
         val userClean = usernameInput.lowercase().trim()
@@ -430,7 +405,6 @@ class DatabaseHelper(context: Context) :
             }
         }
 
-        // Si falló la autenticación, registrar intento fallido en historial y en alertas de seguridad
         registrarEventoInterno(
             db,
             "Seguridad / Acceso",
@@ -519,7 +493,7 @@ class DatabaseHelper(context: Context) :
     }
 
     fun eliminarUsuario(usuario: UsuarioSeguridad, eliminadoPor: String) {
-        if (usuario.username == "admin") return // Proteger cuenta admin principal
+        if (usuario.username == "admin") return
         val db = writableDatabase
         db.delete(TABLE_USUARIOS, "$COL_USER_ID = ?", arrayOf(usuario.id.toString()))
         registrarEventoInterno(
@@ -531,8 +505,6 @@ class DatabaseHelper(context: Context) :
             eliminadoPor
         )
     }
-
-    // ==================== PROTOCOLOS DE SEGURIDAD DEL EDIFICIO ====================
 
     fun obtenerConfiguracionSeguridad(): ConfiguracionSeguridad {
         val db = readableDatabase
@@ -582,9 +554,6 @@ class DatabaseHelper(context: Context) :
         )
     }
 
-    /**
-     * Activa o desactiva el Modo Centinela (Vigilancia por sensores PIR con encendido disuasivo y alerta).
-     */
     fun cambiarModoCentinela(activo: Boolean, usuario: String) {
         val db = writableDatabase
         val values = ContentValues().apply {
@@ -601,11 +570,6 @@ class DatabaseHelper(context: Context) :
         )
     }
 
-    /**
-     * Protocolo de Emergencia / Evacuación:
-     * Si se activa, enciende absolutamente todas las luces del edificio al 100% de intensidad,
-     * bloquea el apagado accidental y registra una alerta crítica en SQLite.
-     */
     fun cambiarProtocoloEmergencia(activo: Boolean, usuario: String) {
         val db = writableDatabase
         val cfgValues = ContentValues().apply {
@@ -652,10 +616,6 @@ class DatabaseHelper(context: Context) :
         }
     }
 
-    /**
-     * Modo Simulación de Presencia Nocturna (Antirrobo):
-     * Enciende sectores estratégicos de acceso, lobby y oficinas para simular ocupación.
-     */
     fun cambiarSimulacionPresencia(activo: Boolean, usuario: String) {
         val db = writableDatabase
         val values = ContentValues().apply {
@@ -664,7 +624,6 @@ class DatabaseHelper(context: Context) :
         db.update(TABLE_CONFIG_SEGURIDAD, values, "$COL_CFG_ID = 1", null)
 
         if (activo) {
-            // Encender sectores de Acceso, Pasillo y Oficina de forma intercalada
             val sectores = obtenerTodosLosSectores()
             sectores.forEachIndexed { index, sector ->
                 val encenderDisuasivo = (index % 2 == 0) || sector.tipoSector.contains("Acceso", ignoreCase = true)
@@ -686,9 +645,6 @@ class DatabaseHelper(context: Context) :
         )
     }
 
-    /**
-     * Bloqueo de Seguridad de Controles Manuales (requiere PIN para desbloquear).
-     */
     fun cambiarBloqueoControles(bloqueado: Boolean, usuario: String) {
         val db = writableDatabase
         val values = ContentValues().apply {
@@ -784,8 +740,6 @@ class DatabaseHelper(context: Context) :
         )
     }
 
-    // ==================== CONSULTAS Y OPERACIONES DE PISOS ====================
-
     fun obtenerPisos(): List<Piso> {
         val lista = mutableListOf<Piso>()
         val db = readableDatabase
@@ -832,8 +786,6 @@ class DatabaseHelper(context: Context) :
         db.delete(TABLE_PISOS, "$COL_PISO_ID = ?", arrayOf(piso.id.toString()))
         registrarEventoInterno(db, piso.nombre, "Piso Completo", "Se eliminó el piso y sus sectores asociados", "ADMIN", usuario)
     }
-
-    // ==================== CONSULTAS Y OPERACIONES DE SECTORES ====================
 
     fun obtenerSectoresPorPiso(pisoId: Int): List<SectorLuz> {
         val lista = mutableListOf<SectorLuz>()
@@ -954,9 +906,6 @@ class DatabaseHelper(context: Context) :
         registrarEventoInterno(db, pisoNombre, sector.nombre, "Sector eliminado", "ADMIN", usuario)
     }
 
-    /**
-     * Acción manual sobre un sector: cambia a modo MANUAL y enciende/apaga la luz.
-     */
     fun cambiarEstadoManualSector(
         sector: SectorLuz,
         encender: Boolean,
@@ -980,9 +929,6 @@ class DatabaseHelper(context: Context) :
         )
     }
 
-    /**
-     * Ajusta la intensidad lumínica (dimmer 10% - 100%) de un sector.
-     */
     fun actualizarIntensidadSector(sectorId: Int, nuevaIntensidad: Int) {
         val db = writableDatabase
         val values = ContentValues().apply {
@@ -991,9 +937,6 @@ class DatabaseHelper(context: Context) :
         db.update(TABLE_SECTORES, values, "$COL_SECTOR_ID = ?", arrayOf(sectorId.toString()))
     }
 
-    /**
-     * Cambia el modo de un sector entre MANUAL y AUTOMATICO.
-     */
     fun cambiarModoControlSector(
         sector: SectorLuz,
         nuevoModo: ModoControl,
@@ -1015,9 +958,6 @@ class DatabaseHelper(context: Context) :
         )
     }
 
-    /**
-     * Guarda los parámetros de automatización (horarios y reglas de sensores) de un sector.
-     */
     fun actualizarConfiguracionAutomatica(
         sectorId: Int,
         pisoNombre: String,
@@ -1050,10 +990,6 @@ class DatabaseHelper(context: Context) :
         )
     }
 
-    /**
-     * Actualiza los valores simulados de los sensores IoT (PIR movimiento y LDR lux) de un sector.
-     * Si el Modo Centinela está activo y se detecta movimiento, dispara protocolo de seguridad.
-     */
     fun actualizarSensoresSector(
         sector: SectorLuz,
         pisoNombre: String,
@@ -1065,7 +1001,6 @@ class DatabaseHelper(context: Context) :
         val values = ContentValues().apply {
             put(COL_SECTOR_MOV_DETECTADO, if (movimientoDetectado) 1 else 0)
             put(COL_SECTOR_LUX_ACTUAL, luxActual.coerceIn(0, 1000))
-            // Si el modo Centinela está activo y se detecta presencia PIR, encender luz al 100% por seguridad
             if (cfgSeguridad.modoCentinelaActivo && movimientoDetectado) {
                 put(COL_SECTOR_ENCENDIDA, 1)
                 put(COL_SECTOR_INTENSIDAD, 100)
@@ -1091,8 +1026,6 @@ class DatabaseHelper(context: Context) :
             )
         }
     }
-
-    // ==================== ACCIONES MASIVAS POR PISO Y EDIFICIO ====================
 
     fun controlarLucesPorPiso(piso: Piso, encender: Boolean, usuario: String = "Operador") {
         val db = writableDatabase
@@ -1172,11 +1105,8 @@ class DatabaseHelper(context: Context) :
         )
     }
 
-    // ==================== MOTOR DE AUTOMATIZACIÓN IoT ====================
-
     fun evaluarReglasAutomaticas(horaActualHHMM: String): Int {
         val cfgSeguridad = obtenerConfiguracionSeguridad()
-        // Si hay emergencia de evacuación activa, las luces permanecen encendidas al 100%
         if (cfgSeguridad.emergenciaEvacuacionActiva) return 0
 
         val db = writableDatabase
@@ -1236,8 +1166,6 @@ class DatabaseHelper(context: Context) :
         if (h !in 0..23 || m !in 0..59) return null
         return h * 60 + m
     }
-
-    // ==================== HISTORIAL Y RESUMEN ====================
 
     fun obtenerHistorial(limite: Int = 80): List<EventoHistorial> {
         val lista = mutableListOf<EventoHistorial>()

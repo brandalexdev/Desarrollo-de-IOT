@@ -1,25 +1,16 @@
 package com.iot.controlluces.model
 
-/**
- * Modo de operación de un sector de iluminación del edificio.
- */
 enum class ModoControl {
     MANUAL,
     AUTOMATICO
 }
 
-/**
- * Roles de seguridad para el control de acceso a la aplicación IoT.
- */
 enum class RolUsuario(val titulo: String, val descripcion: String) {
-    ADMIN("Administrador", "Control total del edificio, seguridad, usuarios y estructura SQLite"),
+    ADMIN("Administrador", "Control total del edificio, seguridad, usuarios y base de datos"),
     OPERADOR("Operador / Guardia", "Control de luces, horarios y monitoreo de alarmas de seguridad"),
     AUDITOR("Invitado / Auditor", "Modo solo lectura para supervisión de consumo y bitácora")
 }
 
-/**
- * Usuario registrado en la tabla `usuarios` de SQLite (con contraseña cifrada SHA-256).
- */
 data class UsuarioSeguridad(
     val id: Int = 0,
     val username: String,
@@ -30,22 +21,16 @@ data class UsuarioSeguridad(
     val ultimoAcceso: String = "Nunca"
 )
 
-/**
- * Alerta de seguridad registrada en la tabla `alertas_seguridad` de SQLite.
- */
 data class AlertaSeguridad(
     val id: Int = 0,
-    val tipoAlerta: String, // INTRUSIÓN PIR, EMERGENCIA, ACCESO FALLIDO, BLOQUEO
-    val nivel: String,      // CRÍTICA, ALTA, MEDIA, INFO
+    val tipoAlerta: String,
+    val nivel: String,
     val ubicacion: String,
     val descripcion: String,
     val fechaHora: String,
     val atendida: Boolean = false
 )
 
-/**
- * Estado global del sistema de seguridad del edificio almacenado en SQLite.
- */
 data class ConfiguracionSeguridad(
     val modoCentinelaActivo: Boolean = false,
     val emergenciaEvacuacionActiva: Boolean = false,
@@ -55,9 +40,6 @@ data class ConfiguracionSeguridad(
     val alertasSinAtender: Int = 0
 )
 
-/**
- * Representa un Piso o Nivel dentro del edificio inteligente.
- */
 data class Piso(
     val id: Int = 0,
     val numero: Int,
@@ -65,41 +47,29 @@ data class Piso(
     val descripcion: String
 )
 
-/**
- * Representa un Sector o Zona luminosa perteneciente a un Piso.
- * Incluye estado manual, intensidad (dimmer), configuración de horario automático,
- * parámetros de sensores IoT (PIR movimiento y LDR luminosidad en Lux) y bandera de zona crítica de seguridad.
- */
 data class SectorLuz(
     val id: Int = 0,
     val pisoId: Int,
     val nombre: String,
     val tipoSector: String,
     val encendida: Boolean = false,
-    val intensidad: Int = 100, // 10% a 100%
+    val intensidad: Int = 100,
     val modoControl: ModoControl = ModoControl.MANUAL,
     val horaEncendido: String = "18:00",
     val horaApagado: String = "06:00",
     val activarPorHorario: Boolean = true,
     val activarPorMovimiento: Boolean = true,
     val activarPorLuzAmbiente: Boolean = true,
-    val umbralLux: Int = 150, // Si luxActual <= umbralLux, hay poca luz natural
+    val umbralLux: Int = 150,
     val movimientoDetectado: Boolean = false,
     val luxActual: Int = 300,
     val consumoNominalWatts: Int = 40,
-    val alarmaIntrusionPorPir: Boolean = true // Si el modo centinela está activo y detecta PIR, dispara alarma
+    val alarmaIntrusionPorPir: Boolean = true
 ) {
-    /**
-     * Consumo energético real en Watts considerando si la luz está encendida y su porcentaje de intensidad.
-     */
     val consumoActualWatts: Int
         get() = if (encendida) ((consumoNominalWatts * intensidad) / 100.0).toInt() else 0
 }
 
-/**
- * Registro de auditoría en la base de datos SQLite cuando una luz cambia de estado
- * de forma manual, por piso, por protocolo de seguridad o mediante automatización IoT.
- */
 data class EventoHistorial(
     val id: Int = 0,
     val pisoNombre: String,
@@ -110,9 +80,6 @@ data class EventoHistorial(
     val fechaHora: String
 )
 
-/**
- * Métricas globales del edificio calculadas desde SQLite.
- */
 data class ResumenEdificio(
     val totalPisos: Int = 0,
     val totalSectores: Int = 0,

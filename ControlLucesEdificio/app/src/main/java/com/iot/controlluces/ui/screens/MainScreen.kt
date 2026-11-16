@@ -105,7 +105,6 @@ import com.iot.controlluces.viewmodel.LucesViewModel
 fun MainScreen(viewModel: LucesViewModel) {
     val state by viewModel.uiState.collectAsState()
 
-    // Si no hay sesión iniciada, mostrar la pantalla de Login de Seguridad
     val usuarioActivo = state.usuarioActual
     if (usuarioActivo == null) {
         LoginSeguridadScreen(
@@ -212,7 +211,6 @@ fun MainScreen(viewModel: LucesViewModel) {
                 .padding(innerPadding)
                 .background(SlateDark)
         ) {
-            // Banner de estado de Emergencia o Modo Centinela si están activos
             if (state.configSeguridad.emergenciaEvacuacionActiva || state.configSeguridad.modoCentinelaActivo || state.configSeguridad.bloqueoControlesManuales) {
                 Surface(
                     color = if (state.configSeguridad.emergenciaEvacuacionActiva) CoralDanger.copy(alpha = 0.25f) else CyanAuto.copy(alpha = 0.18f),
@@ -245,7 +243,7 @@ fun MainScreen(viewModel: LucesViewModel) {
                                 color = Color.White
                             )
                         }
-                        Text("Ir a Seguridad →", fontSize = 11.sp, color = AmberLightOn)
+                        Text("Ir a Seguridad", fontSize = 11.sp, color = AmberLightOn)
                     }
                 }
             }

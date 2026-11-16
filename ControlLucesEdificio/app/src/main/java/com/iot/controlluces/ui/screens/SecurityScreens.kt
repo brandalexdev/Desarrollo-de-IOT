@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,7 +28,6 @@ import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -66,14 +64,10 @@ import com.iot.controlluces.ui.theme.AmberLightOn
 import com.iot.controlluces.ui.theme.CoralDanger
 import com.iot.controlluces.ui.theme.CyanAuto
 import com.iot.controlluces.ui.theme.EmeraldActive
-import com.iot.controlluces.ui.theme.IndigoManual
 import com.iot.controlluces.ui.theme.SlateCard
 import com.iot.controlluces.ui.theme.SlateDark
 import com.iot.controlluces.ui.theme.SlateSurface
 
-/**
- * Pantalla de Inicio de Sesión y Control de Acceso Basado en Roles (RBAC) con SQLite + SHA-256.
- */
 @Composable
 fun LoginSeguridadScreen(
     errorLogin: String?,
@@ -178,7 +172,7 @@ fun LoginSeguridadScreen(
                 HorizontalDivider(color = SlateSurface)
 
                 Text(
-                    text = "Perfiles de Prueba Precargados en SQLite (Toca para autocompletar):",
+                    text = "Perfiles de Prueba Precargados en SQLite:",
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.LightGray
                 )
@@ -217,14 +211,6 @@ fun LoginSeguridadScreen(
     }
 }
 
-/**
- * Pestaña dedicada a las Secciones de Seguridad del Edificio:
- * 1. Protocolo de Emergencia / Evacuación (100% Luces + Bloqueo PIN)
- * 2. Modo Centinela / Vigilancia Nocturna por Sensores PIR
- * 3. Simulación de Presencia Antirrobo y Bloqueo de Controles Manuales
- * 4. Centro de Alertas de Seguridad e Intrusión en SQLite
- * 5. Gestión de Usuarios y Roles con contraseñas cifradas SHA-256
- */
 @Composable
 fun TabSeguridadEdificio(
     usuarioActual: UsuarioSeguridad,
@@ -249,7 +235,6 @@ fun TabSeguridadEdificio(
         contentPadding = PaddingValues(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // 1. Tarjeta de Perfil y Nivel de Acceso Actual
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -289,7 +274,6 @@ fun TabSeguridadEdificio(
             }
         }
 
-        // 2. Protocolos Críticos de Seguridad Lumínica del Edificio
         item {
             Card(
                 modifier = Modifier
@@ -313,7 +297,6 @@ fun TabSeguridadEdificio(
                         color = Color.White
                     )
 
-                    // A) Botón de Emergencia / Evacuación
                     Surface(
                         color = if (configSeguridad.emergenciaEvacuacionActiva) CoralDanger.copy(alpha = 0.22f) else SlateDark,
                         shape = RoundedCornerShape(12.dp),
@@ -371,7 +354,6 @@ fun TabSeguridadEdificio(
                         }
                     }
 
-                    // B) Modo Centinela (Vigilancia por Sensores PIR)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -405,7 +387,6 @@ fun TabSeguridadEdificio(
 
                     HorizontalDivider(color = SlateSurface)
 
-                    // C) Simulación de Presencia Nocturna (Antirrobo)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -431,7 +412,6 @@ fun TabSeguridadEdificio(
 
                     HorizontalDivider(color = SlateSurface)
 
-                    // D) Bloqueo de Seguridad del Panel Manual (Requiere PIN)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -475,7 +455,6 @@ fun TabSeguridadEdificio(
             }
         }
 
-        // 3. Centro de Alertas de Seguridad e Intrusión (Tabla SQLite `alertas_seguridad`)
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -579,7 +558,6 @@ fun TabSeguridadEdificio(
             }
         }
 
-        // 4. Gestión de Usuarios y Control de Acceso (Tabla SQLite `usuarios` con SHA-256)
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),

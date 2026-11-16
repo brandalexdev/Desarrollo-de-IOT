@@ -346,7 +346,7 @@ fun DialogRelojSimulador(
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("☀️ Día (11:00 / 420 lx)")
+                        Text("Día (11:00 / 420 lx)")
                     }
                     OutlinedButton(
                         onClick = {
@@ -355,7 +355,7 @@ fun DialogRelojSimulador(
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("🌙 Noche (21:30 / 35 lx)")
+                        Text("Noche (21:30 / 35 lx)")
                     }
                 }
             }
